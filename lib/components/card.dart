@@ -1,18 +1,21 @@
 import 'dart:math';
 
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flutter/widgets.dart';
 import '../klondike_game.dart';
+import '../pile.dart';
 import '../rank.dart';
 import '../suit.dart';
 
-class Card extends PositionComponent {
+class Card extends PositionComponent with DragCallbacks {
   Card(int intRank, int intSuit)
       : rank = Rank.fromInt(intRank),
         suit = Suit.fromInt(intSuit),
         _faceUp = false,
         super(size: KlondikeGame.cardSize);
 
+  Pile? pile;
   final Rank rank;
   final Suit suit;
   bool _faceUp;
@@ -20,6 +23,27 @@ class Card extends PositionComponent {
   bool get isFaceUp => _faceUp;
   bool get isFaceDown => !_faceUp;
   void flip() => _faceUp = !_faceUp;
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    if (pile?.canMoveCard(this) ?? false) {
+      super.onDragStart(event);
+      priority = 100;
+    }
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    if(!isDragged) {
+      return;
+    }
+    position += event.localDelta;
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
+  }
 
   @override
   void render(Canvas canvas) {

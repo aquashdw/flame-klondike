@@ -3,10 +3,11 @@ import 'package:flame/events.dart';
 import 'package:flutter/widgets.dart';
 
 import '../klondike_game.dart';
+import '../pile.dart';
 import 'waste_pile.dart';
 import 'card.dart';
 
-class StockPile extends PositionComponent with TapCallbacks {
+class StockPile extends PositionComponent with TapCallbacks implements Pile {
   StockPile({super.position}) : super(size: KlondikeGame.cardSize);
 
   final List<Card> _cards = [];
@@ -16,6 +17,7 @@ class StockPile extends PositionComponent with TapCallbacks {
     card.position = position;
     card.priority = _cards.length;
     _cards.add(card);
+    card.pile = this;
   }
 
   @override
@@ -55,4 +57,7 @@ class StockPile extends PositionComponent with TapCallbacks {
       _circlePaint,
     );
   }
+
+  @override
+  bool canMoveCard(Card card) => false;
 }

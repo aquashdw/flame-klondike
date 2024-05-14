@@ -2,10 +2,11 @@ import 'package:flame/components.dart';
 import 'package:flutter/widgets.dart';
 
 import '../klondike_game.dart';
+import '../pile.dart';
 import '../suit.dart';
 import 'card.dart';
 
-class FoundationPile extends PositionComponent {
+class FoundationPile extends PositionComponent implements Pile {
   FoundationPile(int suit, {super.position})
       : suit = Suit.fromInt(suit),
         super(size: KlondikeGame.cardSize);
@@ -18,6 +19,7 @@ class FoundationPile extends PositionComponent {
     card.position = position;
     card.priority = _cards.length;
     _cards.add(card);
+    card.pile = this;
   }
 
   final _borderPaint = Paint()
@@ -40,4 +42,7 @@ class FoundationPile extends PositionComponent {
       overridePaint: _suitPaint,
     );
   }
+
+  @override
+  bool canMoveCard(Card card) => _cards.isNotEmpty && card == _cards.last;
 }
