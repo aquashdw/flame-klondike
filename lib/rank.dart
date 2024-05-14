@@ -6,7 +6,7 @@ import 'package:klondike/klondike_game.dart';
 class Rank {
   factory Rank.fromInt(int value) {
     assert(value >= 1 && value <= 13);
-    return _singletons[value];
+    return _singletons[value - 1];
   }
 
   Rank._(

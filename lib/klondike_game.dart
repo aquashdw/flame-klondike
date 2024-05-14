@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
-import 'package:klondike/card.dart';
+import 'package:klondike/components/card.dart';
 import 'package:klondike/components/foundation.dart';
 import 'package:klondike/components/pile.dart';
 import 'package:klondike/components/stock.dart';
