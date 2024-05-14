@@ -1,14 +1,12 @@
-import 'dart:math';
-
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/widgets.dart';
-import 'package:klondike/components/card.dart';
-import 'package:klondike/components/foundation_pile.dart';
-import 'package:klondike/components/tableau_pile.dart';
-import 'package:klondike/components/stock_pile.dart';
-import 'package:klondike/components/waste_pile.dart';
+import 'components/card.dart';
+import 'components/foundation_pile.dart';
+import 'components/tableau_pile.dart';
+import 'components/stock_pile.dart';
+import 'components/waste_pile.dart';
 
 class KlondikeGame extends FlameGame {
   static const double cardWidth = 1000.0;
@@ -31,7 +29,7 @@ class KlondikeGame extends FlameGame {
 
     final foundations = List.generate(
       4,
-      (i) => FoundationPile()
+      (i) => FoundationPile(i)
         ..size = cardSize
         ..position =
             Vector2((i + 3) * (cardWidth + cardGap) + cardGap, cardGap),
@@ -58,25 +56,23 @@ class KlondikeGame extends FlameGame {
     camera.viewfinder.position = Vector2(cardWidth * 3.5 + cardGap * 4, 0);
     camera.viewfinder.anchor = Anchor.topCenter;
 
-    // final random = Random();
-    // for (var i = 0; i < 7; i++) {
-    //   for (var j = 0; j < 4; j++) {
-    //     final card = Card(random.nextInt(13) + 1, random.nextInt(4))
-    //       ..position = Vector2(100 + i * 1150, 100 + j * 1500)
-    //       ..addToParent(world);
-    //     if (random.nextDouble() < 0.9) {
-    //       card.flip();
-    //     }
-    //   }
-    // }
-
     final cards = [
       for (var rank = 1; rank <= 13; rank++)
         for (var suit = 0; suit < 4; suit++) Card(rank, suit)
     ];
     cards.shuffle();
     world.addAll(cards);
-    cards.forEach(stock.acquireCard);
+
+    int cardToDeal = cards.length - 1;
+    for (var i = 0; i < 7; i++) {
+      for (var j = i; j < 7; j++) {
+        piles[j].acquireCard(cards[cardToDeal--]);
+      }
+      piles[i].flipTopCard();
+    }
+    for (var i = 0; i <= cardToDeal; i++) {
+      stock.acquireCard(cards[i]);
+    }
   }
 
   // card basic rrect
