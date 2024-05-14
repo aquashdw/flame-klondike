@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 import 'package:flutter/widgets.dart';
-import 'package:klondike/klondike_game.dart';
-import 'package:klondike/rank.dart';
-import 'package:klondike/suit.dart';
+import '../klondike_game.dart';
+import '../rank.dart';
+import '../suit.dart';
 
 class Card extends PositionComponent {
   Card(int intRank, int intSuit)

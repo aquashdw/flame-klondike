@@ -1,8 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:klondike/components/waste_pile.dart';
+import 'package:flutter/widgets.dart';
 
 import '../klondike_game.dart';
+import 'waste_pile.dart';
 import 'card.dart';
 
 class StockPile extends PositionComponent with TapCallbacks {
@@ -20,15 +21,38 @@ class StockPile extends PositionComponent with TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     final wastePile = parent!.firstChild<WastePile>()!;
-    for (var i = 0; i < 3; i++) {
-      if (_cards.isNotEmpty) {
-        final card = _cards.removeLast();
+    if (_cards.isEmpty) {
+      wastePile.removeAllCards().reversed.forEach((card) {
         card.flip();
-        wastePile.acquireCard(card);
+        acquireCard(card);
+      });
+    } else {
+      for (var i = 0; i < 3; i++) {
+        if (_cards.isNotEmpty) {
+          final card = _cards.removeLast();
+          card.flip();
+          wastePile.acquireCard(card);
+        }
       }
     }
   }
 
+  final _borderPaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 10
+    ..color = const Color(0xFF3F5B5D);
+  final _circlePaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 100
+    ..color = const Color(0x883F5B5D);
+
   @override
-  bool get debugMode => true;
+  void render(Canvas canvas) {
+    canvas.drawRRect(KlondikeGame.cardRRect, _borderPaint);
+    canvas.drawCircle(
+      Offset(width / 2, height / 2),
+      KlondikeGame.cardWidth * 0.3,
+      _circlePaint,
+    );
+  }
 }

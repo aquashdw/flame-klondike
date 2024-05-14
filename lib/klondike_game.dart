@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
+import 'package:flutter/widgets.dart';
 import 'package:klondike/components/card.dart';
 import 'package:klondike/components/foundation_pile.dart';
 import 'package:klondike/components/tableau_pile.dart';
@@ -77,6 +78,12 @@ class KlondikeGame extends FlameGame {
     world.addAll(cards);
     cards.forEach(stock.acquireCard);
   }
+
+  // card basic rrect
+  static final RRect cardRRect = RRect.fromRectAndRadius(
+    const Rect.fromLTWH(0, 0, cardWidth, cardHeight),
+    const Radius.circular(cardRadius),
+  );
 }
 
 Sprite klondikeSprite(double x, double y, double width, double height) {

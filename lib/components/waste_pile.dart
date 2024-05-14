@@ -31,6 +31,12 @@ class WastePile extends PositionComponent {
     }
   }
 
-  @override
-  bool get debugMode => true;
+  List<Card> removeAllCards() {
+    final cards = _cards.toList();
+    _cards.clear();
+    return cards;
+  }
+
+  // @override
+  // bool get debugMode => true;
 }
