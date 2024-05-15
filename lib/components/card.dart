@@ -34,7 +34,7 @@ class Card extends PositionComponent with DragCallbacks {
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
-    if(!isDragged) {
+    if (!isDragged) {
       return;
     }
     position += event.localDelta;
@@ -42,7 +42,24 @@ class Card extends PositionComponent with DragCallbacks {
 
   @override
   void onDragEnd(DragEndEvent event) {
+    if (!isDragged) {
+      return;
+    }
     super.onDragEnd(event);
+    final dropPiles = parent!
+        .componentsAtPoint(position + size / 2)
+        .whereType<Pile>()
+        .toList();
+    print(dropPiles);
+    if (dropPiles.isNotEmpty) {
+      print(dropPiles.first.canAcceptCard(this));
+      if (dropPiles.first.canAcceptCard(this)) {
+        pile!.removeCard(this);
+        dropPiles.first.acquireCard(this);
+        return;
+      }
+    }
+    pile!.returnCard(this);
   }
 
   @override
