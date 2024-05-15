@@ -9,18 +9,39 @@ class TableauPile extends PositionComponent implements Pile {
   TableauPile({super.position}) : super(size: KlondikeGame.cardSize);
 
   final List<Card> _cards = [];
-  final Vector2 _fanOffset = Vector2(0, KlondikeGame.cardHeight * 0.05);
+  final Vector2 _fanOffsetDown = Vector2(0, KlondikeGame.cardHeight * 0.05);
+  final Vector2 _fanOffsetUp = Vector2(0, KlondikeGame.cardHeight * 0.20);
+
+  void layoutCards() {
+    if (_cards.isEmpty) {
+      return;
+    }
+    _cards[0].position.setFrom(position);
+    for (var i = 1; i < _cards.length; i++) {
+      _cards[i].position
+        ..setFrom(_cards[i - 1].position)
+        ..add(_cards[i - 1].isFaceDown ? _fanOffsetDown : _fanOffsetUp);
+    }
+    height = KlondikeGame.cardHeight * 1.5 + _cards.last.y - _cards.first.y;
+  }
+
+  List<Card> cardsOnTop(Card card) {
+    assert(card.isFaceUp && _cards.contains(card));
+    final index = _cards.indexOf(card);
+    return _cards.getRange(index + 1, _cards.length).toList();
+  }
 
   @override
   void acquireCard(Card card) {
     if (_cards.isEmpty) {
       card.position = position;
     } else {
-      card.position = _cards.last.position + _fanOffset;
+      card.position = _cards.last.position + _fanOffsetDown;
     }
     card.priority = _cards.length;
     _cards.add(card);
     card.pile = this;
+    layoutCards();
   }
 
   void flipTopCard() {
@@ -39,7 +60,7 @@ class TableauPile extends PositionComponent implements Pile {
   }
 
   @override
-  bool canMoveCard(Card card) => _cards.isNotEmpty && card == _cards.last;
+  bool canMoveCard(Card card) => card.isFaceUp;
 
   @override
   bool canAcceptCard(Card card) {
@@ -60,13 +81,15 @@ class TableauPile extends PositionComponent implements Pile {
     if (_cards.isNotEmpty && _cards.last.isFaceDown) {
       flipTopCard();
     }
+    layoutCards();
   }
 
   @override
   void returnCard(Card card) {
     final index = _cards.indexOf(card);
     card.position =
-        index == 0 ? position : _cards[index - 1].position + _fanOffset;
+        index == 0 ? position : _cards[index - 1].position + _fanOffsetDown;
     card.priority = index;
+    layoutCards();
   }
 }

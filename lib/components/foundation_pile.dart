@@ -50,7 +50,9 @@ class FoundationPile extends PositionComponent implements Pile {
   @override
   bool canAcceptCard(Card card) {
     final topCardRank = _cards.isEmpty ? 0 : _cards.last.rank.value;
-    return card.suit == suit && card.rank.value == topCardRank + 1;
+    return card.suit == suit &&
+        card.rank.value == topCardRank + 1 &&
+        card.attachedCards.isEmpty;
   }
 
   @override
@@ -58,10 +60,10 @@ class FoundationPile extends PositionComponent implements Pile {
     assert(canMoveCard(card));
     _cards.removeLast();
   }
-  
+
   @override
   void returnCard(Card card) {
     card.position = position;
     card.priority = _cards.indexOf(card);
-  }  
+  }
 }

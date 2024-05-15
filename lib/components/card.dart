@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/widgets.dart';
+import 'package:klondike/components/tableau_pile.dart';
 import '../klondike_game.dart';
 import '../pile.dart';
 import '../rank.dart';
@@ -20,6 +21,8 @@ class Card extends PositionComponent with DragCallbacks {
   final Suit suit;
   bool _faceUp;
 
+  final List<Card> attachedCards = [];
+
   bool get isFaceUp => _faceUp;
   bool get isFaceDown => !_faceUp;
   void flip() => _faceUp = !_faceUp;
@@ -29,6 +32,14 @@ class Card extends PositionComponent with DragCallbacks {
     if (pile?.canMoveCard(this) ?? false) {
       super.onDragStart(event);
       priority = 100;
+      if (pile is TableauPile) {
+        attachedCards.clear();
+        final extraCards = (pile! as TableauPile).cardsOnTop(this);
+        for (final card in extraCards) {
+          card.priority = attachedCards.length + 101;
+          attachedCards.add(card);
+        }
+      }
     }
   }
 
@@ -37,7 +48,11 @@ class Card extends PositionComponent with DragCallbacks {
     if (!isDragged) {
       return;
     }
-    position += event.localDelta;
+    final delta = event.localDelta;
+    position.add(delta);
+    for (var card in attachedCards) {
+      card.position.add(delta);
+    }
   }
 
   @override
@@ -50,16 +65,26 @@ class Card extends PositionComponent with DragCallbacks {
         .componentsAtPoint(position + size / 2)
         .whereType<Pile>()
         .toList();
-    print(dropPiles);
     if (dropPiles.isNotEmpty) {
-      print(dropPiles.first.canAcceptCard(this));
       if (dropPiles.first.canAcceptCard(this)) {
         pile!.removeCard(this);
         dropPiles.first.acquireCard(this);
+        if (attachedCards.isNotEmpty) {
+          for (var card in attachedCards) {
+            dropPiles.first.acquireCard(card);
+          }
+          attachedCards.clear();
+        }
         return;
       }
     }
     pile!.returnCard(this);
+    if (attachedCards.isNotEmpty) {
+      for (var card in attachedCards) {
+        pile!.returnCard(card);
+      }
+      attachedCards.clear();
+    }
   }
 
   @override
