@@ -65,6 +65,7 @@ class Card extends PositionComponent with DragCallbacks {
         .componentsAtPoint(position + size / 2)
         .whereType<Pile>()
         .toList();
+    print(dropPiles);
     if (dropPiles.isNotEmpty) {
       if (dropPiles.first.canAcceptCard(this)) {
         pile!.removeCard(this);
@@ -78,6 +79,7 @@ class Card extends PositionComponent with DragCallbacks {
         return;
       }
     }
+    print('here?');
     pile!.returnCard(this);
     if (attachedCards.isNotEmpty) {
       for (var card in attachedCards) {
