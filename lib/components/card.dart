@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flame/components.dart';
+import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/widgets.dart';
 import 'package:klondike/components/tableau_pile.dart';
@@ -21,6 +22,8 @@ class Card extends PositionComponent with DragCallbacks {
   final Suit suit;
   bool _faceUp;
 
+  Vector2 _whereCardStarted = Vector2(0, 0);
+
   final List<Card> attachedCards = [];
 
   bool get isFaceUp => _faceUp;
@@ -31,7 +34,10 @@ class Card extends PositionComponent with DragCallbacks {
   void onDragStart(DragStartEvent event) {
     if (pile?.canMoveCard(this) ?? false) {
       super.onDragStart(event);
+
       priority = 100;
+      _whereCardStarted = Vector2(position.x, position.y);
+
       if (pile is TableauPile) {
         attachedCards.clear();
         final extraCards = (pile! as TableauPile).cardsOnTop(this);
@@ -65,7 +71,6 @@ class Card extends PositionComponent with DragCallbacks {
         .componentsAtPoint(position + size / 2)
         .whereType<Pile>()
         .toList();
-    print(dropPiles);
     if (dropPiles.isNotEmpty) {
       if (dropPiles.first.canAcceptCard(this)) {
         pile!.removeCard(this);
@@ -79,11 +84,21 @@ class Card extends PositionComponent with DragCallbacks {
         return;
       }
     }
-    print('here?');
-    pile!.returnCard(this);
+    doMove(
+      _whereCardStarted,
+      onComplete: () {
+        pile!.returnCard(this);
+      },
+    );
     if (attachedCards.isNotEmpty) {
       for (var card in attachedCards) {
-        pile!.returnCard(card);
+        final offset = card.position - position;
+        card.doMove(
+          _whereCardStarted + offset,
+          onComplete: () {
+            pile!.returnCard(card);
+          },
+        );
       }
       attachedCards.clear();
     }
@@ -275,6 +290,26 @@ class Card extends PositionComponent with DragCallbacks {
     if (rotate) {
       canvas.restore();
     }
+  }
+
+  void doMove(
+    Vector2 to, {
+    double speed = 10.0,
+    double start = 0.0,
+    Curve curve = Curves.easeOutQuad,
+    VoidCallback? onComplete,
+  }) {
+    assert(speed > 0.0, 'Speed must be > 0 widths per second');
+    final dt = (to - position).length / (speed * size.x);
+    assert(dt > 0.0, 'Distance to move must be > 0');
+    priority = 100;
+    add(MoveToEffect(
+      to,
+      EffectController(duration: dt, startDelay: start, curve: curve),
+      onComplete: () {
+        onComplete?.call();
+      },
+    ));
   }
 
   @override
