@@ -4,7 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/widgets.dart';
-import 'package:klondike/components/tableau_pile.dart';
+import 'tableau_pile.dart';
 import '../klondike_game.dart';
 import '../pile.dart';
 import '../rank.dart';
@@ -20,6 +20,8 @@ class Card extends PositionComponent with DragCallbacks {
   Pile? pile;
   final Rank rank;
   final Suit suit;
+  bool _isAnimatedFlip = false;
+  bool _isFaceUpView = false;
   bool _faceUp;
 
   Vector2 _whereCardStarted = Vector2(0, 0);
@@ -28,7 +30,50 @@ class Card extends PositionComponent with DragCallbacks {
 
   bool get isFaceUp => _faceUp;
   bool get isFaceDown => !_faceUp;
-  void flip() => _faceUp = !_faceUp;
+  void flip() {
+    if (_isAnimatedFlip) {
+      _faceUp = _isFaceUpView;
+    } else {
+      _faceUp = !_faceUp;
+      _isFaceUpView = _faceUp;
+    }
+  }
+
+  void turnFaceUp({
+    double time = 0.3,
+    double start = 0.0,
+    VoidCallback? onComplete,
+  }) {
+    assert(!_isFaceUpView, 'Card must be face-down before turning face-up.');
+    assert(time > 0.0, 'Time to turn card over must be > 0');
+    _isAnimatedFlip = true;
+    anchor = Anchor.topCenter;
+    position += Vector2(width / 2, 0);
+    priority = 100;
+    add(
+      ScaleEffect.to(
+        Vector2(scale.x / 100, scale.y),
+        EffectController(
+          startDelay: start,
+          curve: Curves.easeOutSine,
+          duration: time / 2,
+          onMax: () {
+            _isFaceUpView = true;
+          },
+          reverseDuration: time / 2,
+          onMin: () {
+            _isAnimatedFlip = false;
+            _faceUp = true;
+            anchor = Anchor.topLeft;
+            position -= Vector2(width / 2, 0);
+          },
+        ),
+        onComplete: () {
+          onComplete?.call();
+        },
+      ),
+    );
+  }
 
   @override
   void onDragStart(DragStartEvent event) {
@@ -106,7 +151,7 @@ class Card extends PositionComponent with DragCallbacks {
 
   @override
   void render(Canvas canvas) {
-    if (_faceUp) {
+    if (_isFaceUpView) {
       _renderFront(canvas);
     } else {
       _renderBack(canvas);
